@@ -30,14 +30,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String? _data;
+  List<Map<String, String>>? _data;
   final APIService apiService = APIService();
 
-  void _fetchData() async {
-    String? fetchedData = await apiService.fetchData();
-    setState(() {
-      _data = fetchedData;
-    });
+  Future<void> _fetchData() async {
+    try {
+      final data = await apiService.fetchData();
+      setState(() {
+        _data = data;
+      });
+    } catch (error) {
+      print('Error fetching data: $error');
+      setState(() {
+        _data = null;
+      });
+    }
   }
 
   @override
@@ -50,18 +57,21 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'Fetched Data:',
-            ),
+            const Text('Fetched Data:'),
             if (_data != null)
-              Text(
-                _data!,
-                style: const TextStyle(fontSize: 20),
+              Column(
+                children: [
+                  for (final item in _data!)
+                    Text(
+                      'Product ID: ${item['productId'] ?? ''}, Price: ${item['price'] ?? ''}, Color: ${item['color'] ?? ''}',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                ],
               ),
             if (_data == null)
-              const Text(
+              Text(
                 'No data fetched.',
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
           ],
         ),
